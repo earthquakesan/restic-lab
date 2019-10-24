@@ -1,0 +1,22 @@
+---
+- hosts: server
+  become: yes
+  vars:
+    restic_version: "0.9.5"
+    sha256_sum: "08cd75e56a67161e9b16885816f04b2bf1fb5b03bc0677b0ccf3812781c1a2ec"
+  tasks:
+    - name: get the restic_{{ restic_version }}_linux_amd64.bz2 archive
+      get_url:
+        url: "https://github.com/restic/restic/releases/download/v{{ restic_version }}/restic_{{ restic_version }}_linux_amd64.bz2"
+        checksum: "sha256:{{ sha256_sum }}"
+        dest: "/tmp/restic_{{ restic_version }}_linux_amd64.bz2"
+    - name: unarchive restic to /usr/local/bin/restic
+      shell: >
+        bunzip2 /tmp/restic_{{ restic_version }}_linux_amd64.bz2 --stdout > /usr/local/bin/restic
+      args:
+        creates: "/usr/local/bin/restic"
+    - name: set execute permissions on /usr/local/bin/restic
+      file:
+        state: file
+        path: /usr/local/bin/restic
+        mode: "0755"
