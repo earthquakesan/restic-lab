@@ -1,0 +1,48 @@
+---
+- name: install necessary packages
+  apt:
+    name:
+      - golang
+      - git
+    update_cache: yes
+- name: clone restic rest-server to /tmp/rest-server
+  git:
+    repo: 'https://github.com/restic/rest-server.git'
+    dest: /tmp/rest-server
+    version: master
+- name: build rest-server binary
+  shell: >
+    make
+  args:
+    chdir: /tmp/rest-server
+- name: copy binary to /usr/local/bin
+  copy:
+    src: /tmp/rest-server/rest-server
+    dest: /usr/local/bin/restic-rest-server
+    remote_src: yes
+- name: set execute permissions on /usr/local/bin/restic-rest-server
+  file:
+    state: file
+    path: /usr/local/bin/restic-rest-server
+    mode: "0755"
+- name: create repository path
+  file:
+    state: directory
+    path: "{{ repository_path }}"
+- name: create password file at {{ repository_password_filepath }}
+  shell: "echo {{ repository_password }} > {{ repository_password_filepath }}"
+- name: initialize restic repository
+  shell: >
+    restic init 
+    -r {{ repository_path }}
+    --password-file {{ repository_password_filepath }}
+- name: initialize restic-rest-server.service.j2 to /etc/systemd/system/
+  template:
+    src: "restic-rest-server.service.j2"
+    dest: "/etc/systemd/system/restic-rest-server.service"
+- name: enable and start restic-rest-server.service
+  systemd:
+    state: restarted
+    name: restic-rest-server
+    enabled: yes
+    daemon_reload: yes

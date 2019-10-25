@@ -1,0 +1,7 @@
+---
+- hosts: server
+  become: yes
+  vars:
+    repository_password: "asdf"
+  roles:
+    - restic-rest-server

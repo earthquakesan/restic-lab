@@ -1,0 +1,17 @@
+[Unit]
+Description=Restic Rest Server
+After=syslog.target network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/local/bin/restic-rest-server --path {{ repository_path }} --no-auth --listen :80
+Restart=always
+RestartSec=5
+StartLimitInterval=0
+
+[Install]
+Alias=restic-rest-server
+WantedBy=multi-user.target

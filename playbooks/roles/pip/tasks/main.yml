@@ -1,0 +1,9 @@
+---
+- name: download get-pip.py
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp/get-pip.py
+- name: run get-pip.py
+  shell: >
+    python /tmp/get-pip.py
+  become: yes
